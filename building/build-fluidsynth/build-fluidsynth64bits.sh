@@ -5,7 +5,7 @@ MYPATH=$1
 SHARED=$2
 CMD=$3
 
-FSVERSION="2.4.7"
+FSVERSION="2.5.1"
 
 if [[ "$CMD" == "" ]]; then
 	echo Error! CMD empty
@@ -40,6 +40,19 @@ if [[ "$CMD" == "config" ]]; then
 	if [ ! -d ${MYPATH}/fluidsynth-${FSVERSION} ]; then
 		git clone --branch v${FSVERSION} --depth 1 https://github.com/FluidSynth/fluidsynth.git "${MYPATH}/fluidsynth-${FSVERSION}"
 
+	fi
+
+	if [ "$(printf '%s\n' "2.5.0" "$FSVERSION" | sort -V | head -n1)" = "2.5.0" ]; then
+
+		# patch fluid_file.cpp to force fluid_file_test()
+
+		FILE1="${MYPATH}/fluidsynth-${FSVERSION}/src/utils/fluid_file.cpp"
+		chmod u+rw "${FILE1}"	
+
+		if ! grep -q 'return true; g_file_test' "${FILE1}"; then
+    		sed -i.bak 's/^[[:space:]]*return g_file_test\(.*\);/    return true; return g_file_test\1;/' "${FILE1}"
+    		echo "src/utils/fluid_file.cpp patched"
+		fi
 	fi
 
 	cd  "${MYPATH}"
