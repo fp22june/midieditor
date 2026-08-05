@@ -422,3 +422,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea/
+
+# visual studio 2022 default
+out/*
+
+# local
+*.bak

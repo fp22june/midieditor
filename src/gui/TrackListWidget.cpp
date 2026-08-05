@@ -37,7 +37,11 @@
 #include <QToolBar>
 #include <QWidget>
 
-#define ROW_HEIGHT 85
+#define G_SPACING 1
+#define LABEL_NUM_H 18
+#define LABEL_NAME_H 18
+#define TOOLBARSIZE 30
+#define ROW_HEIGHT LABEL_NUM_H + G_SPACING + LABEL_NAME_H + G_SPACING + TOOLBARSIZE
 
 TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent)
     : QWidget(parent) {
@@ -45,62 +49,70 @@ TrackListItem::TrackListItem(MidiTrack *track, TrackListWidget *parent)
     this->track = track;
 
     setContentsMargins(0, 0, 0, 0);
+
     QGridLayout *layout = new QGridLayout(this);
     setLayout(layout);
-    layout->setVerticalSpacing(1);
+    layout->setSpacing(G_SPACING);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     colored = new ColoredWidget(*(track->color()), this);
-    layout->addWidget(colored, 0, 0, 2, 1);
+    layout->addWidget(colored, 0, 0, 3, 1);
+
     QString text = tr("Track ") + QString::number(track->number());
     QLabel *text1 = new QLabel(text, this);
-    text1->setFixedHeight(18);
+    text1->setContentsMargins(0, 0, 0, 0);
+    text1->setFixedHeight(LABEL_NUM_H);
     text1->setAlignment(Qt::AlignBottom | Qt::AlignLeft);
     layout->addWidget(text1, 0, 1, 1, 1);
 
     trackNameLabel = new QLabel(tr("New Track"), this);
-    trackNameLabel->setFixedHeight(18);
+    trackNameLabel->setContentsMargins(0, 0, 0, 0);
+    trackNameLabel->setFixedHeight(LABEL_NAME_H);
     trackNameLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     layout->addWidget(trackNameLabel, 1, 1, 1, 1);
 
     QToolBar *toolBar = new QToolBar(this);
-    toolBar->setIconSize(QSize(12, 12));
+    toolBar->setContentsMargins(0, 0, 0, 0);
+    toolBar->setIconSize(QSize(TOOLBARSIZE, TOOLBARSIZE));
+    toolBar->setFixedHeight(TOOLBARSIZE);
     QPalette palette = toolBar->palette();
     palette.setColor(QPalette::Window, Appearance::toolbarBackgroundColor());
     toolBar->setPalette(palette);
-    // visibility
-    visibleAction = new QAction(tr("Track Visible"), toolBar);
-    Appearance::setActionIcon(visibleAction, ":/run_environment/graphics/trackwidget/visible.png");
-    visibleAction->setCheckable(true);
-    visibleAction->setChecked(true);
-    toolBar->addAction(visibleAction);
-    connect(visibleAction, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility(bool)));
 
-    // audibility
-    loudAction = new QAction(tr("Track Audible"), toolBar);
-    Appearance::setActionIcon(loudAction, ":/run_environment/graphics/trackwidget/loud.png");
-    loudAction->setCheckable(true);
-    loudAction->setChecked(true);
-    toolBar->addAction(loudAction);
-    connect(loudAction, SIGNAL(toggled(bool)), this, SLOT(toggleAudibility(bool)));
+          // visibility
+          visibleAction = new QAction(tr("Track Visible"), toolBar);
+          Appearance::setActionIcon(visibleAction, ":/run_environment/graphics/trackwidget/visible.png");
+          visibleAction->setCheckable(true);
+          visibleAction->setChecked(true);
+          toolBar->addAction(visibleAction);
+          connect(visibleAction, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility(bool)));
 
-    toolBar->addSeparator();
+          // audibility
+          loudAction = new QAction(tr("Track Audible"), toolBar);
+          Appearance::setActionIcon(loudAction, ":/run_environment/graphics/trackwidget/loud.png");
+          loudAction->setCheckable(true);
+          loudAction->setChecked(true);
+          toolBar->addAction(loudAction);
+          connect(loudAction, SIGNAL(toggled(bool)), this, SLOT(toggleAudibility(bool)));
 
-    // name
-    QAction *renameAction = new QAction(tr("Rename Track"), toolBar);
-    Appearance::setActionIcon(renameAction, ":/run_environment/graphics/trackwidget/rename.png");
-    toolBar->addAction(renameAction);
-    connect(renameAction, SIGNAL(triggered()), this, SLOT(renameTrack()));
+          toolBar->addSeparator();
 
-    // remove
-    QAction *removeAction = new QAction(tr("Remove Track"), toolBar);
-    Appearance::setActionIcon(removeAction, ":/run_environment/graphics/trackwidget/remove.png");
-    toolBar->addAction(removeAction);
-    connect(removeAction, SIGNAL(triggered()), this, SLOT(removeTrack()));
+          // name
+          QAction *renameAction = new QAction(tr("Rename Track"), toolBar);
+          Appearance::setActionIcon(renameAction, ":/run_environment/graphics/trackwidget/rename.png");
+          toolBar->addAction(renameAction);
+          connect(renameAction, SIGNAL(triggered()), this, SLOT(renameTrack()));
+
+          // remove
+          QAction *removeAction = new QAction(tr("Remove Track"), toolBar);
+          Appearance::setActionIcon(removeAction, ":/run_environment/graphics/trackwidget/remove.png");
+          toolBar->addAction(removeAction);
+          connect(removeAction, SIGNAL(triggered()), this, SLOT(removeTrack()));
 
     layout->addWidget(toolBar, 2, 1, 1, 1);
 
-    layout->setRowStretch(2, 1);
-    setContentsMargins(5, 1, 5, 0);
+    //layout->setRowStretch(2, 1);
+    //setContentsMargins(5, 1, 5, 0);
     setFixedHeight(ROW_HEIGHT);
 }
 
@@ -152,6 +164,7 @@ void TrackListItem::onBeforeUpdate() {
 TrackListWidget::TrackListWidget(QWidget *parent)
     : QListWidget(parent) {
     setSelectionMode(QAbstractItemView::SingleSelection);
+    setContentsMargins(0, 0, 0, 0);
     setStyleSheet("QListWidget { background-color: palette(base); } QListWidget::item { border-bottom: 1px solid lightGray; }");
     file = 0;
     connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(chooseTrack(QListWidgetItem*)));

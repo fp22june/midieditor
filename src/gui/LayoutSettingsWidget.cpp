@@ -374,8 +374,8 @@ void LayoutSettingsWidget::populateActionsList(bool forceRepopulation) {
     QStringList orderToUse = getComprehensiveActionOrder(); // Full list in proper order
     QStringList defaultEnabledActions = getDefaultEnabledActions(); // Default enabled states
 
-    // Use empty enabled actions list to force default enabled state
-    QStringList enabledActions;
+    // Load current settings
+    QStringList enabledActions = Appearance::toolbarEnabledActions();
 
     // Get row distribution
     QStringList row1Actions, row2Actions;
@@ -837,17 +837,21 @@ QStringList LayoutSettingsWidget::getComprehensiveActionOrder() {
             << "select_measure" << "select_left" << "select_right" << "separator3"
             << "new_note" << "remove_notes" << "copy" << "paste" << "separator4"
             << "glue" << "scissors" << "delete_overlaps" << "separator5"
+            << "record"
+            << "separator12" << "quantize" << "magnet" << "separator11"
+                        << "measure" << "time_signature" << "tempo"
             << "move_all" << "move_lr" << "move_ud" << "size_change" << "separator6"
             << "transpose" << "transpose_up" << "transpose_down" << "separator7"
             << "back_to_begin" << "back_marker" << "back" << "play" << "pause"
-            << "stop" << "record" << "forward" << "forward_marker" << "separator8"
+            << "stop"             << "forward" << "forward_marker" << "separator8"
             << "metronome"
             << "align_left" << "equalize" << "align_right" << "separator9"
             << "zoom_hor_in" << "zoom_hor_out" << "zoom_ver_in" << "zoom_ver_out"
             << "lock" << "separator10"
-            << "quantize" << "magnet" << "separator11"
-            << "thru" << "panic" << "separator12"
-            << "measure" << "time_signature" << "tempo";
+            // << "quantize" << "magnet" << "separator11"
+            << "thru" << "panic" //<< "separator12"
+            // << "measure" << "time_signature" << "tempo";
+            ;
     return order;
 }
 
@@ -857,18 +861,22 @@ QStringList LayoutSettingsWidget::getDefaultEnabledActions() {
     enabled << "standard_tool" << "select_left" << "select_right" << "separator3"
             << "new_note" << "remove_notes" << "copy" << "paste" << "separator4"
             << "glue" << "scissors" << "delete_overlaps" << "separator5"
+            << "record"
+            << "separator12" << "quantize" << "magnet" << "separator11"
+                        << "measure" << "time_signature" << "tempo"
             // separator6 disabled because move actions are disabled by default
             // separator7 disabled because transpose actions are disabled by default
             << "back_to_begin" << "back_marker" << "back" << "play" << "pause"
-            << "stop" << "record" << "forward" << "forward_marker" << "separator8"
+            << "stop"             << "forward" << "forward_marker" << "separator8"
             << "metronome"
             << "align_left" << "equalize" << "align_right" << "separator9"
             << "zoom_hor_in" << "zoom_hor_out" << "zoom_ver_in" << "zoom_ver_out"
             << "lock" << "separator10"
-            << "quantize" << "magnet" << "separator11"
+            // << "quantize" << "magnet" << "separator11"
             // thru and panic disabled by default
             // << "thru" << "panic" << "separator12"
-            << "measure" << "time_signature" << "tempo";
+            // << "measure" << "time_signature" << "tempo";
+            ;
     return enabled;
 }
 
@@ -912,13 +920,13 @@ QList<ToolbarActionInfo> LayoutSettingsWidget::getEssentialActionInfos() {
     // Used for fallback scenarios when full action info is needed
     // Includes separator2 after redo because customizable actions don't start with separators
     QList<ToolbarActionInfo> essential;
-    essential << ToolbarActionInfo{"new", tr("New"), ":/run_environment/graphics/tool/new.png", nullptr, true, true, "File"};
-    essential << ToolbarActionInfo{"open", tr("Open"), ":/run_environment/graphics/tool/load.png", nullptr, true, true, "File"};
-    essential << ToolbarActionInfo{"save", tr("Save"), ":/run_environment/graphics/tool/save.png", nullptr, true, true, "File"};
-    essential << ToolbarActionInfo{"separator1", tr("--- Separator ---"), "", nullptr, true, true, "Separator"};
+    essential << ToolbarActionInfo{"new", tr("New"), ":/run_environment/graphics/tool/new.png", nullptr,    false, true, "File"};
+    essential << ToolbarActionInfo{"open", tr("Open"), ":/run_environment/graphics/tool/load.png", nullptr, false, true, "File"};
+    essential << ToolbarActionInfo{"save", tr("Save"), ":/run_environment/graphics/tool/save.png", nullptr, false, true, "File"};
+    essential << ToolbarActionInfo{"separator1", tr("--- Separator ---"), "", nullptr,                      false, true, "Separator"};
     essential << ToolbarActionInfo{"undo", tr("Undo"), ":/run_environment/graphics/tool/undo.png", nullptr, true, true, "Edit"};
     essential << ToolbarActionInfo{"redo", tr("Redo"), ":/run_environment/graphics/tool/redo.png", nullptr, true, true, "Edit"};
-    essential << ToolbarActionInfo{"separator2", tr("--- Separator ---"), "", nullptr, true, true, "Separator"};
+    essential << ToolbarActionInfo{"separator2", tr("--- Separator ---"), "", nullptr,                      true, true, "Separator"};
     return essential;
 }
 
@@ -929,15 +937,20 @@ QStringList LayoutSettingsWidget::getDefaultToolbarOrder() {
     // Minimal default toolbar order - only essential + commonly used actions
     // This is what users see when customization is disabled
     QStringList order;
-    order   << "standard_tool" << "select_left" << "select_right" << "separator3"
-            << "new_note" << "remove_notes" << "copy" << "paste" << "separator4"
-            << "glue" << "scissors" << "delete_overlaps" << "separator5"
-            << "back_to_begin" << "back_marker" << "back" << "play" << "pause"
-            << "stop" << "record" << "forward" << "forward_marker" << "separator6"
-            << "metronome" << "align_left" << "equalize" << "align_right" << "separator7"
-            << "zoom_hor_in" << "zoom_hor_out" << "zoom_ver_in" << "zoom_ver_out"
-            << "lock" << "separator8" << "quantize" << "magnet" << "separator9"
-            << "measure" << "time_signature" << "tempo";
+    order   << "standard_tool" //<< "select_left" << "select_right" << "separator3"
+            << "new_note" //<< "remove_notes" << "copy" << "paste" << "separator4"
+            //<< "glue" << "scissors" << "delete_overlaps" << "separator5"
+            << "record"
+            << "separator8" << "quantize" << "magnet" << "separator9"
+                        << "measure" << "time_signature" << "tempo"
+
+            //<< "back_to_begin" << "back_marker" << "back"           << "pause"
+                                                          << "play"
+            << "stop"             //<< "forward" << "forward_marker" << "separator6"
+            << "metronome" //<< "align_left" << "equalize" << "align_right" << "separator7"
+            //<< "zoom_hor_in" << "zoom_hor_out" << "zoom_ver_in" << "zoom_ver_out"
+            //<< "lock" ;
+            ;
     return order;
 }
 

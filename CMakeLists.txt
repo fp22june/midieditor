@@ -85,12 +85,14 @@ endif()
 # Qt6 detection with fallbacks
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{QT_ROOT_DIR} $ENV{Qt6_DIR})
 
+get_filename_component(QTINSTALL "${CMAKE_PREFIX_PATH}/../.." ABSOLUTE)
+
 # Add common Qt installation paths
 if(WIN32)
     # Common Qt installation paths on Windows
     # Prioritize MinGW builds if using GCC compiler
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        file(GLOB QT_MINGW "C:/Qt/6.*/mingw*")
+        file(GLOB QT_MINGW "${QTINSTALL}/6.*/mingw*")
         if(QT_MINGW)
             list(GET QT_MINGW -1 QT_MINGW_LATEST)
             set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_MINGW_LATEST}")
@@ -99,7 +101,7 @@ if(WIN32)
     endif()
 
     # Fallback to MSVC builds
-    file(GLOB QT_VERSIONS "C:/Qt/6.*")
+    file(GLOB QT_VERSIONS "${QTINSTALL}/6.*")
     if(QT_VERSIONS)
         list(GET QT_VERSIONS -1 QT_LATEST_VERSION)  # Get the latest version
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_LATEST_VERSION}/msvc2022_64")
@@ -107,7 +109,7 @@ if(WIN32)
     endif()
 
     # Also try other common compiler versions
-    file(GLOB QT_MSVC2019 "C:/Qt/6.*/msvc2019_64")
+    file(GLOB QT_MSVC2019 "${QTINSTALL}/6.*/msvc2019_64")
     if(QT_MSVC2019)
         list(GET QT_MSVC2019 -1 QT_MSVC2019_LATEST)
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_MSVC2019_LATEST}")
@@ -165,6 +167,22 @@ endif()
 # Main target
 add_executable(MidiEditor)
 
+# visual studio previous run DLL locked error
+set(CLEAN_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/clean_locks.cmake")
+file(WRITE "${CLEAN_SCRIPT}" "
+  file(GLOB DLLFILES \"\$ENV{DEST_DIR}/msvc*.dll\" \"\$ENV{DEST_DIR}/vc*.dll\")
+  foreach(file \${DLLFILES})
+    file(REMOVE \${file})
+  endforeach()
+")
+add_custom_command(
+    TARGET MidiEditor PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E env "DEST_DIR=$<TARGET_FILE_DIR:MidiEditor>" 
+            ${CMAKE_COMMAND} -P "${CLEAN_SCRIPT}"
+    COMMENT "Clearing locked runtime DLLs..."
+    VERBATIM
+)
+
 # Apply performance optimizations to target
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(ipo_supported)
@@ -202,7 +220,7 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(MidiEditor PRIVATE ${OPENGL_LIBRARIES})
 
 # Link zlib for GP7 extraction (raw deflate)
-set(ZLIB_INCLUDE_DIR "C:/Qt/6.11.0/msvc2022_64/include/QtZlib")
+set(ZLIB_INCLUDE_DIR "${QT_LATEST_VERSION}/msvc2022_64/include/QtZlib") 
 target_include_directories(MidiEditor PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(MidiEditor PRIVATE ${ZLIB_LIBRARY})
 
@@ -499,11 +517,22 @@ if(WIN32)
             COMMENT "Manually copying Qt platform plugins"
         )
     endif()
+    if(FLUIDSYNTH_FOUND)
+        file(GLOB FS_DLLS "${FLUIDSYNTH_DIR}/bin/*.dll")
+        if(FS_DLLS)
+            message(STATUS "FS_DLLS found. Copying FS_DLLS ${FS_DLLS}")
+            foreach(file ${FS_DLLS})
+                file(COPY "${file}" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+            endforeach()
+        else()
+            message(WARNING "FS_DLLS not found")
+        endif()
+    endif()
 endif()
 
 # Installation
 set(INSTALL_DIR "packaging/org.midieditor.midieditor/data/")
-set(BIN_DIR "${INSTALL_DIR}/bin")
+set(BIN_DIR "${INSTALL_DIR}bin")
 set(PLUGIN_DIR "${BIN_DIR}/plugins")
 
 install(TARGETS MidiEditor DESTINATION "${BIN_DIR}")
@@ -512,23 +541,33 @@ if(PLAT_WINDOWS)
     # Qt deployment
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${Qt6_DIR}/../../../bin)
     if(WINDEPLOYQT_EXECUTABLE)
+        message(STATUS "WINDEPLOYQT_EXECUTABLE found ${WINDEPLOYQT_EXECUTABLE}")
         install(CODE "
             execute_process(COMMAND ${WINDEPLOYQT_EXECUTABLE}
                 --plugindir ${PLUGIN_DIR}
                 --libdir ${BIN_DIR}
-                \${CMAKE_INSTALL_PREFIX}/${BIN_DIR}/MidiEditor.exe
+                \"${CMAKE_INSTALL_PREFIX}/${BIN_DIR}/MidiEditor.exe\"
             )
-            file(GLOB DSENGINE_FILES \"\${CMAKE_INSTALL_PREFIX}/${BIN_DIR}/**/dsengine.dll\")
+            file(GLOB DSENGINE_FILES \"${CMAKE_INSTALL_PREFIX}/${BIN_DIR}/**/dsengine.dll\")
             foreach(FILE \${DSENGINE_FILES})
                 file(REMOVE \${FILE})
             endforeach()
-            if(NOT \"${FLUIDSYNTH_DIR}\" STREQUAL \"\")
-                file(GLOB FS_DLLS \"${FLUIDSYNTH_DIR}/bin/*fluidsynth*.dll\")
+            if(${FLUIDSYNTH_FOUND} AND (NOT \"${FLUIDSYNTH_DIR}\" STREQUAL \"\"))
+                message(STATUS \"FLUIDSYNTH_DIR ${FLUIDSYNTH_DIR}\")
+                file(GLOB FS_DLLS \"${FLUIDSYNTH_DIR}/bin/*.dll\")
+                message(STATUS \"FS_DLLS \${FS_DLLS}\")
                 if(FS_DLLS)
-                    file(COPY \${FS_DLLS} DESTINATION \${CMAKE_INSTALL_PREFIX}/${BIN_DIR})
+                    message(STATUS \"FS_DLLS found. Copying FS_DLLS \${FS_DLLS}\")
+                    foreach(file \${FS_DLLS})
+                        file(COPY \"\${file}\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/${BIN_DIR}\")
+                    endforeach()
+                else()
+                    message(WARNING \"FS_DLLS not found\")
                 endif()
             endif()
         ")
+    else()
+        message(WARNING "WINDEPLOYQT_EXECUTABLE not found")
     endif()
 endif()
 

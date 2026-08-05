@@ -2377,26 +2377,15 @@ void MatrixWidget::wheelEvent(QWheelEvent *event) {
         if (pixelDeltaLinear == 0) pixelDeltaLinear = pixelDeltaX;
 
         if (km == Qt::ShiftModifier) {
-            if (pixelDeltaLinear > 0) {
-                zoomVerIn();
-            } else if (pixelDeltaLinear < 0) {
-                zoomVerOut();
-            }
+            horScrollAmount = pixelDeltaLinear * 5;
         } else if (km == Qt::ControlModifier) {
             if (pixelDeltaLinear > 0) {
                 zoomHorIn();
+                zoomVerIn();
             } else if (pixelDeltaLinear < 0) {
                 zoomHorOut();
+                zoomVerOut();
             }
-        } else if (km == (Qt::ControlModifier | Qt::ShiftModifier)) {
-            // Ctrl+Shift+wheel for scroll bar-like vertical scrolling (multiple lines at once)
-            if (pixelDeltaLinear != 0) {
-                // Use a larger scroll multiplier to match scroll bar behavior
-                int scrollMultiplier = 5; // Scroll 5x more than normal wheel scrolling
-                verScrollAmount = pixelDeltaLinear * scrollMultiplier;
-            }
-        } else if (km == Qt::AltModifier) {
-            horScrollAmount = pixelDeltaLinear;
         }
     } else {
         horScrollAmount = pixelDeltaX;

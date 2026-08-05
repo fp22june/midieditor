@@ -1,0 +1,50 @@
+﻿{
+    "configurations": [
+        {
+            "name": "x64-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "CMAKE_PREFIX_PATH",
+                    "value": "C:\\QtNew\\6.11.1\\msvc2022_64",
+                    "type": "STRING"
+                },
+                {
+                    "name": "FLUIDSYNTH_DIR",
+                    "value": "C:\\fluidsynth\\fluidsynth-v2.5.7-win10-x64-cpp11",
+                    "type": "FILEPATH"
+                }
+            ]
+        },
+        {
+            "name": "x64-Release",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "CMAKE_PREFIX_PATH",
+                    "value": "C:\\QtNew\\6.11.1\\msvc2022_64",
+                    "type": "STRING"
+                },
+                {
+                    "name": "FLUIDSYNTH_DIR",
+                    "value": "C:\\fluidsynth\\fluidsynth-v2.5.7-win10-x64-cpp11",
+                    "type": "FILEPATH"
+                }
+            ]
+        }
+    ]
+}
