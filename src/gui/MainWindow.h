@@ -310,11 +310,13 @@ public slots:
     void toolChanged();
     void copiedEventsChanged();
 
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
     void updateDetected(Update* update);
 #endif
 
     void promtUpdatesDeactivatedDialog();
+#endif
 
     void tweakTime();
     void tweakStartTime();

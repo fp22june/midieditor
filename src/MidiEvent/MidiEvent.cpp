@@ -445,7 +445,7 @@ MidiEvent* MidiEvent::loadMidiEvent(QDataStream* content, bool* ok,
  // Modified by Estwald:
 
                     QString str;
-                    char text[length + 1];
+                    std::vector<char> text(length + 1);
                     int counter =0;
                     int is_utf8 = 0;
                     for (int i = 0; i < length; i++) {
@@ -476,9 +476,9 @@ MidiEvent* MidiEvent::loadMidiEvent(QDataStream* content, bool* ok,
 */
 
                     if(!is_utf8)
-                        str = QString::fromLocal8Bit((const char *) text, length);
+                        str = QString::fromLocal8Bit(text.data(), length);
                     else
-                        str = QString::fromUtf8((const char *) text, length);
+                        str = QString::fromUtf8(text.data(), length);
                     textEvent->setText(str);
 #endif
                     *ok = true;

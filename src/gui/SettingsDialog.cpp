@@ -33,8 +33,9 @@
 #include "../remote/RemoteServer.h"
 #include "RemoteSettingsWidget.h"
 #endif
+#ifdef UPDATEMAN
 #include "UpdateSettingsWidget.h"
-
+#endif
 SettingsDialog::SettingsDialog(QString title, QSettings* settings, RemoteServer* /*server*/, QWidget* parent)
     : QDialog(parent)
 {
@@ -98,8 +99,10 @@ SettingsDialog::SettingsDialog(QString title, QSettings* settings, RemoteServer*
     addSetting(new RemoteSettingsWidget(server, central));
 #endif
     addSetting(new AppearanceSettingsWidget(central));
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
     addSetting(new UpdateSettingsWidget(settings, central));
+#endif
 #endif
 }
 

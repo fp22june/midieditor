@@ -39,6 +39,8 @@
 
 #include "MidiOutput.h"
 
+//#include "../tool/FingerPatternDialog.h"
+
 static int virtual_device = -1;
 
 RtMidiIn* MidiInput::_midiIn[MAX_INPUT_DEVICES];
@@ -118,7 +120,7 @@ void MidiInput::cleanKeyMaps() {
 // from FingerPatternDialog
 
 extern int finger_token[2];
-extern bool _note_finger_disabled;
+extern bool _note_finger_disabled[];
 
 QByteArray MidiInput::note_roll[16];
 //QByteArray MidiInput::note_roll_out[16];

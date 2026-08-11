@@ -152,7 +152,9 @@ void ProtocolWidget::update()
                 scrollToItem(firstToRedo, QAbstractItemView::PositionAtCenter);
             }
         } else
+#ifdef USE_FLUIDSYNTH
             update_vst = true;
+#endif
         nextChangeFromList = false;
     }
 

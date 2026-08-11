@@ -25,7 +25,9 @@
 #include <QFile>
 #include <QTextStream>
 
+#ifdef UPDATEMAN
 #include "UpdateManager.h"
+#endif
 #include <QMultiMap>
 #include <QResource>
 
@@ -137,11 +139,13 @@ int main(int argc, char* argv[])
     }
 
 #ifndef CUSTOM_MIDIEDITOR
+#ifdef UPDATEMAN
     UpdateManager::instance()->init();
     a.setApplicationVersion(UpdateManager::instance()->versionString());
     a.setApplicationName("MidiEditor");
     a.setQuitOnLastWindowClosed(true);
     a.setProperty("date_published", UpdateManager::instance()->date());
+#endif
 #else
 #define STRINGIZER(arg) #arg
 #define STR_VALUE(arg) STRINGIZER(arg)
@@ -193,7 +197,7 @@ int main(int argc, char* argv[])
         char *file = argv[1];
 
         QString str;
-        char fileNew[length + 1];
+        std::vector<char> fileNew(length + 1);
         int counter =0;
         int is_utf8 = 0;
         for (int i = 0; i < length; i++) {
@@ -222,9 +226,9 @@ int main(int argc, char* argv[])
         */
 
         if(!is_utf8)
-            str = QString::fromLocal8Bit((const char *) fileNew, length);
+            str = QString::fromLocal8Bit(fileNew.data(), length);
         else
-            str = QString::fromUtf8((const char *) fileNew, length);
+            str = QString::fromUtf8(fileNew.data(), length);
 
         w = new MainWindow(str);
     }

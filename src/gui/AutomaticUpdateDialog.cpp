@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifdef UPDATEMAN
 #include "AutomaticUpdateDialog.h"
 
 #include <QApplication>
@@ -104,12 +104,11 @@ AutomaticUpdateDialog::AutomaticUpdateDialog(
   layout->addWidget(accept, 7, 2, 1, 1);
   connect(accept, SIGNAL(clicked()), this, SLOT(enableAutoUpdates()));
 }
-
 void AutomaticUpdateDialog::enableAutoUpdates() {
 #ifndef CUSTOM_MIDIEDITOR
   UpdateManager::setAutoCheckUpdatesEnabled(true);
 #endif
   this->hide();
 }
-
+#endif
 

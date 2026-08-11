@@ -1,1 +1,6 @@
 midieditor.pro.user
+/.vs
+/out
+/CMakePresets.json
+/CMakeUserPresets.json
+/CMakeSettings.json

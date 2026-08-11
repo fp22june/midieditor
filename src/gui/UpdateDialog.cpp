@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
 #include "UpdateDialog.h"
 
@@ -94,4 +95,5 @@ UpdateDialog::UpdateDialog(Update* update, QWidget* parent)
     layout->addWidget(close, 5, 2, 1, 1);
     connect(close, SIGNAL(clicked()), this, SLOT(hide()));
 }
+#endif
 #endif

@@ -1,3 +1,4 @@
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
 #include "UpdateManager.h"
 
@@ -138,4 +139,5 @@ void UpdateManager::fileDownloaded(QNetworkReply* reply)
         }
     }
 }
+#endif
 #endif

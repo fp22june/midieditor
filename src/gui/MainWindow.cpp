@@ -135,7 +135,10 @@
 #include "../midi/MidiInControl.h"
 #include "../gui/MidiEditorInstrument.h"
 
+#ifdef UPDATEMAN
 #include "../UpdateManager.h"
+#endif
+
 #include "CompleteMidiSetupDialog.h"
 #include "UpdateDialog.h"
 #include "AutomaticUpdateDialog.h"
@@ -409,9 +412,11 @@ MainWindow::MainWindow(QString initFile)
         SIGNAL(measureChanged(int, int)), _remoteServer, SLOT(setMeasure(int)));
 
 #endif
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
     UpdateManager::setAutoCheckUpdatesEnabled(_settings->value("auto_update_after_prompt", false).toBool());
     connect(UpdateManager::instance(), SIGNAL(updateDetected(Update*)), this, SLOT(updateDetected(Update*)));
+#endif
 #endif
     _quantizationGrid = _settings->value("Main/quantization", 3).toInt();
 
@@ -1175,6 +1180,7 @@ MainWindow::MainWindow(QString initFile)
     selectionNavigator = new SelectionNavigator(this);
 
     QTimer::singleShot(250, this, SLOT(loadInitFile()));
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
     if (UpdateManager::autoCheckForUpdates()) {
        // QTimer::singleShot(500, UpdateManager::instance(), SLOT(checkForUpdates()));
@@ -1189,6 +1195,7 @@ MainWindow::MainWindow(QString initFile)
     if (numStart == 10 && !UpdateManager::autoCheckForUpdates()) {
         QTimer::singleShot(300, this, SLOT(promtUpdatesDeactivatedDialog()));
     }
+#endif
 #endif
 
 
@@ -2935,8 +2942,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
     _settings->setValue("Main/metronome_loudness", Metronome::loudness());
     _settings->setValue("Main/thru", MidiInput::thru());
     _settings->setValue("Main/quantization", _quantizationGrid);
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
     _settings->setValue("auto_update_after_prompt", UpdateManager::autoCheckForUpdates());
+#endif
 #endif
     _settings->setValue("Main/has_prompted_for_updates", true); // Happens on first start
 
@@ -6327,7 +6336,7 @@ void MainWindow::copiedEventsChanged()
     _pasteAction->setEnabled(enable);
     pasteActionTB->setEnabled(enable);
 }
-
+#ifdef if UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
 void MainWindow::updateDetected(Update* update)
 {
@@ -6346,6 +6355,7 @@ void MainWindow::promtUpdatesDeactivatedDialog() {
     d->exec();
     delete d;
 }
+#endif
 
 void MainWindow::updateAll() {
     mw_matrixWidget->registerRelayout();

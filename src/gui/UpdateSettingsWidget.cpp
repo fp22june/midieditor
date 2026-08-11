@@ -1,3 +1,4 @@
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
 #include "UpdateSettingsWidget.h"
 
@@ -47,4 +48,5 @@ UpdateSettingsWidget::UpdateSettingsWidget(QSettings *settings, QWidget *parent)
 void UpdateSettingsWidget::enableAutoUpdates(bool enable) {
   UpdateManager::setAutoCheckUpdatesEnabled(enable);
 }
+#endif
 #endif

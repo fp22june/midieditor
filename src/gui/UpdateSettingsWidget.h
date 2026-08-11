@@ -1,3 +1,4 @@
+#ifdef UPDATEMAN
 #ifndef UPDATESETTINGSWIDGET_H
 #define UPDATESETTINGSWIDGET_H
 #ifndef CUSTOM_MIDIEDITOR
@@ -22,4 +23,5 @@ private:
 };
 #endif
 
+#endif
 #endif

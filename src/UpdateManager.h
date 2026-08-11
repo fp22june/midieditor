@@ -1,3 +1,4 @@
+#ifdef UPDATEMAN
 #ifndef UPDATEMANAGER_H
 #define UPDATEMANAGER_H
 
@@ -65,4 +66,5 @@ class UpdateManager : public QObject {
 };
 #endif
 
+#endif
 #endif
