@@ -227,6 +227,8 @@ set(ZLIB_INCLUDE_DIR "${QT_LATEST_VERSION}/msvc2022_64/include/QtZlib")
 target_include_directories(MidiEditor PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(MidiEditor PRIVATE ${ZLIB_LIBRARY})
 
+#TODO
+if(0)
 # Optional FluidSynth support for built-in synthesizer
 # Accept pre-built install dir via -DFLUIDSYNTH_DIR=... or FLUIDSYNTH_DIR env var
 if(NOT FLUIDSYNTH_DIR)
@@ -281,6 +283,9 @@ if(FLUIDSYNTH_FOUND)
 else()
     message(STATUS "FluidSynth not found - built-in synthesizer disabled")
 endif()
+endif()
+target_compile_definitions(MidiEditor PRIVATE CUSTOM_MIDIEDITOR)
+target_compile_definitions(MidiEditor PRIVATE USE_FLUIDSYNTH)
 
 # Additional linking for MinGW compatibility
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -313,6 +318,7 @@ file(GLOB SOURCES_PROTOCOL "src/protocol/*.cpp")
 file(GLOB SOURCES_SUPPORT "src/support/*.cpp")
 file(GLOB SOURCES_TOOL "src/tool/*.cpp")
 file(GLOB SOURCES_VST "src/VST/*.cpp")
+file(GLOB SOURCES_FS "src/fluid/*.cpp")
 
 # For midi directory, be selective to avoid test files
 file(GLOB SOURCES_MIDI "src/midi/*.cpp")
@@ -328,6 +334,7 @@ set(SOURCES
     ${SOURCES_PROTOCOL}
     ${SOURCES_SUPPORT}
     ${SOURCES_VST}
+    ${SOURCES_FS}
 )
 
 # Add only main rtmidi files if they exist (not tests/docs/examples)
@@ -360,6 +367,7 @@ file(GLOB HEADERS_PROTOCOL "src/protocol/*.h")
 file(GLOB HEADERS_SUPPORT "src/support/*.h")
 file(GLOB HEADERS_TOOL "src/tool/*.h")
 file(GLOB HEADERS_VST "src/VST/*.h")
+file(GLOB HEADERS_FS "src/fluid/*.h") #../../fluidsynth/*.h
 
 # For midi directory, be selective to avoid test files
 file(GLOB HEADERS_MIDI "src/midi/*.h")
@@ -375,6 +383,7 @@ set(HEADERS
     ${HEADERS_PROTOCOL}
     ${HEADERS_SUPPORT}
     ${HEADERS_VST}
+    ${HEADERS_FS}
 )
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/src/midi/rtmidi/RtMidi.h")
@@ -394,6 +403,22 @@ list(FILTER HEADERS EXCLUDE REGEX ".*/docs/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/android/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/samples/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/old/.*")
+
+#TODO
+if(0)
+    add_library(fsdyn SHARED IMPORTED)
+    set_target_properties(fsdyn PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a")
+    set_target_properties(fsdyn PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll")
+    target_link_libraries(fsdyn INTERFACE "fluidsynth/*.h")
+    target_link_libraries(MidiEditor PRIVATE fsdyn)
+    set(FLUIDSYNTH_FOUND TRUE)
+    set(FLUIDSYNTH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/")
+endif()
+if(0)
+    set_target_properties(MidiEditor PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a")
+    set_target_properties(MidiEditor PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll")
+endif()
+target_link_libraries(MidiEditor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a)
 
 # Check if we have any source files
 list(LENGTH SOURCES SOURCE_COUNT)
@@ -525,6 +550,8 @@ if(WIN32)
             COMMENT "Manually copying Qt platform plugins"
         )
     endif()
+
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll" DESTINATION "${CMAKE_BINARY_DIR}/bin")
 endif()
 
 # Installation
@@ -549,26 +576,9 @@ if(PLAT_WINDOWS)
             foreach(FILE \${DSENGINE_FILES})
                 file(REMOVE \${FILE})
             endforeach()
-            if(${FLUIDSYNTH_FOUND} AND (NOT \"${FLUIDSYNTH_DIR}\" STREQUAL \"\"))
-                message(STATUS \"FLUIDSYNTH_DIR ${FLUIDSYNTH_DIR}\")
-                file(GLOB FS_DLLS \"${FLUIDSYNTH_DIR}/bin/*fluidsynth*.dll\")
-                message(STATUS \"FS_DLLS ${FS_DLLS}\")
-                if(FS_DLLS)
-                    file(COPY \${FS_DLLS} DESTINATION \${CMAKE_INSTALL_PREFIX}/${BIN_DIR})
-                endif()
-            endif()
+
+            file(COPY \"${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll\" DESTINATION \$${CMAKE_INSTALL_PREFIX}${BIN_DIR})
         ")
-        if(FLUIDSYNTH_FOUND)
-            file(GLOB FS_DLLS "${FLUIDSYNTH_DIR}/bin/*.dll")
-            if(FS_DLLS)
-                message(STATUS "FS_DLLS found. Copying FS_DLLS ${FS_DLLS}")
-                foreach(file ${FS_DLLS})
-                    file(COPY "${file}" DESTINATION "${CMAKE_BINARY_DIR}/bin")
-                endforeach()
-            else()
-                message(WARNING "FS_DLLS not found")
-            endif()
-        endif()
     else()
         message(WARNING "WINDEPLOYQT_EXECUTABLE not found")
     endif()

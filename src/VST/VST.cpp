@@ -914,9 +914,8 @@ void VSTDialog::Save() {
         encode_sys_format(qd, (void *) &dat);
         dat = VST_preset_data[chan]->numParams;
         encode_sys_format(qd, (void *) &dat);
-        char data2[clen + 4];
-        memset(data2, 0, clen + 4);
-        memcpy(data2, name.data(), clen);
+        std::vector<char> data2(clen + 4);
+        memcpy(data2.data(), name.data(), clen);
         for(int n = 0; n < clen; n+= 4) {
             encode_sys_format(qd, (void *) &data2[n]);
         }
@@ -4485,9 +4484,8 @@ int VST_proc::VST_SaveParameters(int chan)
         encode_sys_format(qd, (void *) &dat);
         dat = VST_preset_data[chan]->numParams;
         encode_sys_format(qd, (void *) &dat);
-        char data2[clen + 4];
-        memset(data2, 0, clen + 4);
-        memcpy(data2, name.data(), clen);
+        std::vector<char>  data2(clen + 4);
+        memcpy(data2.data(), name.data(), clen);
         for(int n = 0; n < clen; n+= 4) {
             encode_sys_format(qd, (void *) &data2[n]);
         }
@@ -4515,9 +4513,8 @@ int VST_proc::VST_SaveParameters(int chan)
             break;
         }
 
-        char data2[clen + 4];
-        memset(data2, 0, clen + 4);
-        memcpy(data2, VST_preset_data[chan]->preset[pre].data(), clen);
+        std::vector<char> data2(clen + 4);
+        memcpy(data2.data(), VST_preset_data[chan]->preset[pre].data(), clen);
 
         // delete old sysEx events
         if(1/*clen > 0*/) {

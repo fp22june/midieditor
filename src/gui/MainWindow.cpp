@@ -6336,7 +6336,7 @@ void MainWindow::copiedEventsChanged()
     _pasteAction->setEnabled(enable);
     pasteActionTB->setEnabled(enable);
 }
-#ifdef if UPDATEMAN
+#ifdef UPDATEMAN
 #ifndef CUSTOM_MIDIEDITOR
 void MainWindow::updateDetected(Update* update)
 {
