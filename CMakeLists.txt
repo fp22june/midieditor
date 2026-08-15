@@ -227,8 +227,6 @@ set(ZLIB_INCLUDE_DIR "${QT_LATEST_VERSION}/msvc2022_64/include/QtZlib")
 target_include_directories(MidiEditor PRIVATE ${ZLIB_INCLUDE_DIR})
 target_link_libraries(MidiEditor PRIVATE ${ZLIB_LIBRARY})
 
-#TODO
-if(0)
 # Optional FluidSynth support for built-in synthesizer
 # Accept pre-built install dir via -DFLUIDSYNTH_DIR=... or FLUIDSYNTH_DIR env var
 if(NOT FLUIDSYNTH_DIR)
@@ -280,12 +278,13 @@ if(FLUIDSYNTH_FOUND)
         target_include_directories(MidiEditor PRIVATE ${FLUIDSYNTH_INCLUDE_DIR})
         target_link_libraries(MidiEditor PRIVATE ${FLUIDSYNTH_LIBRARY})
     endif()
+
+    target_compile_definitions(MidiEditor PRIVATE USE_FLUIDSYNTH) #estwaldfork
 else()
     message(STATUS "FluidSynth not found - built-in synthesizer disabled")
 endif()
-endif()
+
 target_compile_definitions(MidiEditor PRIVATE CUSTOM_MIDIEDITOR)
-target_compile_definitions(MidiEditor PRIVATE USE_FLUIDSYNTH)
 
 # Additional linking for MinGW compatibility
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -306,6 +305,7 @@ target_include_directories(MidiEditor PRIVATE
     src/support
     src/tool
     src/VST
+    src/fluid
 )
 message(STATUS "Added project include directories")
 
@@ -367,7 +367,7 @@ file(GLOB HEADERS_PROTOCOL "src/protocol/*.h")
 file(GLOB HEADERS_SUPPORT "src/support/*.h")
 file(GLOB HEADERS_TOOL "src/tool/*.h")
 file(GLOB HEADERS_VST "src/VST/*.h")
-file(GLOB HEADERS_FS "src/fluid/*.h") #../../fluidsynth/*.h
+file(GLOB HEADERS_FS "src/fluid/*.h")
 
 # For midi directory, be selective to avoid test files
 file(GLOB HEADERS_MIDI "src/midi/*.h")
@@ -404,21 +404,6 @@ list(FILTER HEADERS EXCLUDE REGEX ".*/android/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/samples/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/old/.*")
 
-#TODO
-if(0)
-    add_library(fsdyn SHARED IMPORTED)
-    set_target_properties(fsdyn PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a")
-    set_target_properties(fsdyn PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll")
-    target_link_libraries(fsdyn INTERFACE "fluidsynth/*.h")
-    target_link_libraries(MidiEditor PRIVATE fsdyn)
-    set(FLUIDSYNTH_FOUND TRUE)
-    set(FLUIDSYNTH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/")
-endif()
-if(0)
-    set_target_properties(MidiEditor PROPERTIES IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a")
-    set_target_properties(MidiEditor PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll")
-endif()
-target_link_libraries(MidiEditor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll.a)
 
 # Check if we have any source files
 list(LENGTH SOURCES SOURCE_COUNT)
@@ -551,7 +536,17 @@ if(WIN32)
         )
     endif()
 
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+    if(FLUIDSYNTH_FOUND)
+        file(GLOB FS_DLLS "${FLUIDSYNTH_DIR}/bin/*.dll")
+        if(FS_DLLS)
+            message(STATUS "FS_DLLS found. Copying FS_DLLS ${FS_DLLS}")
+            foreach(file ${FS_DLLS})
+                file(COPY "${file}" DESTINATION "${CMAKE_BINARY_DIR}/bin")
+            endforeach()
+        else()
+            message(WARNING "FS_DLLS not found")
+        endif()
+    endif()
 endif()
 
 # Installation
@@ -576,8 +571,19 @@ if(PLAT_WINDOWS)
             foreach(FILE \${DSENGINE_FILES})
                 file(REMOVE \${FILE})
             endforeach()
-
-            file(COPY \"${CMAKE_CURRENT_SOURCE_DIR}/lib64/windows/libfluidsynth-3.dll\" DESTINATION \$${CMAKE_INSTALL_PREFIX}${BIN_DIR})
+            if(${FLUIDSYNTH_FOUND} AND (NOT \"${FLUIDSYNTH_DIR}\" STREQUAL \"\"))
+                message(STATUS \"FLUIDSYNTH_DIR ${FLUIDSYNTH_DIR}\")
+                file(GLOB FS_DLLS \"${FLUIDSYNTH_DIR}/bin/*.dll\")
+                message(STATUS \"FS_DLLS \${FS_DLLS}\")
+                if(FS_DLLS)
+                    message(STATUS \"FS_DLLS found. Copying FS_DLLS \${FS_DLLS}\")
+                    foreach(file \${FS_DLLS})
+                        file(COPY \"\${file}\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/${BIN_DIR}\")
+                    endforeach()
+                else()
+                    message(WARNING \"FS_DLLS not found\")
+                endif()
+            endif()
         ")
     else()
         message(WARNING "WINDEPLOYQT_EXECUTABLE not found")
